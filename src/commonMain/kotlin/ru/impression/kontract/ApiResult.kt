@@ -22,6 +22,15 @@ data class Err(override val error: ApiError = UnknownError) : ApiResult<Nothing>
     override val value = null
 }
 
+inline fun <V> ApiResult<V>.onSuccess(action: (V) -> Unit) = this.also { if (this is Ok<V>) action(value) }
+
+inline fun <V> ApiResult<V>.onFailure(action: (ApiError) -> Unit) = this.also { if (this is Err) action(error) }
+
+inline fun <V, U> ApiResult<V>.map(transform: (V) -> U) = when (this) {
+    is Ok<V> -> Ok(transform(value))
+    is Err -> this
+}
+
 @Serializable
 @PublishedApi
 internal class SerializableResult(

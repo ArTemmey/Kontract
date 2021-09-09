@@ -12,7 +12,7 @@ suspend inline fun <reified T : ApiCall.Type, reified D> HttpClient.request(
     val result = request<SerializableResult>(
         HttpRequestBuilder().apply {
             val apiCall = block()
-            url(baseApiUrl + apiCall.path)
+            url(baseApiUrl + apiCall.contract.parametrizedPath)
             method = T::class.httpMethod
             apiCall.requestBody?.let { body = it }
             apiCall.queryParams.forEach {

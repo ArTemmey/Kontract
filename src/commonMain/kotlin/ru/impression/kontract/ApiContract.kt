@@ -52,17 +52,17 @@ abstract class ApiContract {
     }
 
     protected inline fun <reified D> get(requestBody: Any? = null) =
-        ApiCall<ApiCall.Type.Get, D>(parametrizedPath, requestBody, queryParams)
+        ApiCall<ApiCall.Type.Get, D>(this, requestBody, queryParams)
 
     protected inline fun <reified D> post(requestBody: Any? = null) =
-        ApiCall<ApiCall.Type.Post, D>(parametrizedPath, requestBody, queryParams)
+        ApiCall<ApiCall.Type.Post, D>(this, requestBody, queryParams)
 
     protected inline fun <reified D> put(requestBody: Any? = null) =
-        ApiCall<ApiCall.Type.Put, D>(parametrizedPath, requestBody, queryParams)
+        ApiCall<ApiCall.Type.Put, D>(this, requestBody, queryParams)
 
     protected inline fun <reified D> patch(requestBody: Any? = null) =
-        ApiCall<ApiCall.Type.Patch, D>(parametrizedPath, requestBody, queryParams)
+        ApiCall<ApiCall.Type.Patch, D>(this, requestBody, queryParams)
 
     protected inline fun <reified D> delete(requestBody: Any? = null) =
-        ApiCall<ApiCall.Type.Delete, D>(parametrizedPath, requestBody, queryParams)
+        ApiCall<ApiCall.Type.Delete, D>(this, requestBody, queryParams)
 }

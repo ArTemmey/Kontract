@@ -14,7 +14,7 @@ val KClass<out ApiCall.Type>.httpMethod
     }
 
 class ApiCall<T : ApiCall.Type, D>(
-    val path: String,
+    val contract: ApiContract,
     val requestBody: Any?,
     val queryParams: Map<String, *>
 ) {
