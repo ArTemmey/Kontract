@@ -4,6 +4,7 @@ import kotlin.properties.ReadWriteProperty
 import kotlin.reflect.KProperty
 
 abstract class ApiContract {
+    var baseUrl: String? = null
     abstract val path: String
 
     @PublishedApi
@@ -17,6 +18,9 @@ abstract class ApiContract {
         }
 
     @PublishedApi
+    internal val headers = mutableMapOf<String, Any?>()
+
+    @PublishedApi
     internal val pathParams = mutableMapOf<String, Any?>()
 
     @PublishedApi
@@ -24,6 +28,19 @@ abstract class ApiContract {
 
     @PublishedApi
     internal var callParser: CallParser? = null
+
+    protected inline fun <reified T> header(name: String) = object : ReadWriteProperty<ApiContract, T?> {
+
+        private var value: T? = null
+
+        override fun getValue(thisRef: ApiContract, property: KProperty<*>) =
+            callParser?.getHeader<T>(name) ?: value
+
+        override fun setValue(thisRef: ApiContract, property: KProperty<*>, value: T?) {
+            headers[name] = value
+            this.value = value
+        }
+    }
 
     protected inline fun <reified T> pathParam(name: String) = object : ReadWriteProperty<ApiContract, T?> {
 
@@ -52,17 +69,17 @@ abstract class ApiContract {
     }
 
     protected inline fun <reified D> get(requestBody: Any? = null) =
-        ApiCall<ApiCall.Type.Get, D>(this, requestBody, queryParams)
+        ApiCall<ApiCall.Type.Get, D>(this, requestBody)
 
     protected inline fun <reified D> post(requestBody: Any? = null) =
-        ApiCall<ApiCall.Type.Post, D>(this, requestBody, queryParams)
+        ApiCall<ApiCall.Type.Post, D>(this, requestBody)
 
     protected inline fun <reified D> put(requestBody: Any? = null) =
-        ApiCall<ApiCall.Type.Put, D>(this, requestBody, queryParams)
+        ApiCall<ApiCall.Type.Put, D>(this, requestBody)
 
     protected inline fun <reified D> patch(requestBody: Any? = null) =
-        ApiCall<ApiCall.Type.Patch, D>(this, requestBody, queryParams)
+        ApiCall<ApiCall.Type.Patch, D>(this, requestBody)
 
     protected inline fun <reified D> delete(requestBody: Any? = null) =
-        ApiCall<ApiCall.Type.Delete, D>(this, requestBody, queryParams)
+        ApiCall<ApiCall.Type.Delete, D>(this, requestBody)
 }

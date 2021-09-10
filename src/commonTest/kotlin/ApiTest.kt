@@ -8,10 +8,7 @@ import kotlinx.serialization.encodeToString
 import kotlinx.serialization.json.Json
 import kotlinx.serialization.modules.SerializersModule
 import kotlinx.serialization.modules.polymorphic
-import ru.impression.kontract.ApiContract
-import ru.impression.kontract.ApiResult
-import ru.impression.kontract.Ok
-import ru.impression.kontract.request
+import ru.impression.kontract.*
 import kotlin.test.Test
 
 
@@ -23,8 +20,8 @@ class ProjectEntity(val id: Int, val name: String)
 
 sealed class MyApi : ApiContract() {
 
-    companion object {
-        const val BASE_URL = "https://example.com/api"
+    init {
+        baseUrl = "https://example.com/api"
     }
 
     class Users : MyApi() {
@@ -50,8 +47,6 @@ class ApiTest {
     }
 
     suspend fun testClient(client: HttpClient) {
-        client.request(MyApi.BASE_URL) {
-            MyApi.User().apply { userId = 123 }.get()
-        }
+        MyApi.User().apply { userId = 123 }.get().execute(client)
     }
 }

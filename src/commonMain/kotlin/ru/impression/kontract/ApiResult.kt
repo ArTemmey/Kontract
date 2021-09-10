@@ -1,5 +1,6 @@
 package ru.impression.kontract
 
+import io.ktor.client.features.*
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.json.JsonElement
 
@@ -8,6 +9,8 @@ interface ApiError
 
 @Serializable
 object UnknownError : ApiError
+
+class ServerResponseError(val cause: ServerResponseException) : ApiError
 
 sealed class ApiResult<out V> {
     abstract val value: V?
