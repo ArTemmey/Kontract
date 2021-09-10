@@ -1,10 +1,12 @@
 package ru.impression.kontract
 
+import kotlinx.serialization.json.Json
 import kotlin.properties.ReadWriteProperty
 import kotlin.reflect.KProperty
 
 abstract class ApiContract {
     var baseUrl: String? = null
+    var json: Json = Json
     abstract val path: String
 
     @PublishedApi

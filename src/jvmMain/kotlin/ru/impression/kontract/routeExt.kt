@@ -19,46 +19,39 @@ inline fun <reified T : ApiContract> Route.route(crossinline build: Route.() -> 
 
 inline fun <reified C : ApiContract, reified T : ApiCall.Type, reified D> Route.method(
     function: KFunction1<C, ApiCall<T, D>>,
-    crossinline body: suspend ApiMethodContext<C>.() -> ApiResult<D>
+    noinline body: suspend ApiMethodContext<C>.() -> ApiResult<D>
 ) {
-    method(T::class.httpMethod) {
-        handle {
-            val contract = C::class.createInstance()
-            contract.callParser = CallParser(this)
-            val context = ApiMethodContext(contract, this)
-            val result = body(context)
-            val serializableResult = SerializableResult(
-                when (result) {
-                    is Err -> "err"
-                    is Ok -> "ok"
-                },
-                result.value?.let { Json.encodeToJsonElement(it) },
-                result.error?.let { Json.encodeToJsonElement(it) }
-            )
-            context.status?.let { call.respond(it, serializableResult) } ?: call.respond(serializableResult)
-        }
-    }
+    method<C, T, Unit, D>(body)
 }
+
 
 inline fun <reified C : ApiContract, reified T : ApiCall.Type, reified R : Any, reified D> Route.method(
     function: KFunction2<C, R, ApiCall<T, D>>,
-    crossinline body: suspend ApiMethodContext<C>.(R) -> ApiResult<D>
+    noinline body: suspend ApiMethodContext<C>.(R) -> ApiResult<D>
+) {
+    method<C, T, R, D>(body1Arg = body)
+}
+
+@PublishedApi
+internal inline fun <reified C : ApiContract, reified T : ApiCall.Type, reified R : Any, reified D> Route.method(
+    noinline bodyNoArgs: (suspend ApiMethodContext<C>.() -> ApiResult<D>)? = null,
+    noinline body1Arg: (suspend ApiMethodContext<C>.(R) -> ApiResult<D>)? = null
 ) {
     method(T::class.httpMethod) {
         handle {
             val contract = C::class.createInstance()
             contract.callParser = CallParser(this)
             val context = ApiMethodContext(contract, this)
-            val result = body(context, call.receive())
+            val result = bodyNoArgs?.invoke(context) ?: body1Arg?.invoke(context, call.receive()) ?: return@handle
             val serializableResult = SerializableResult(
                 when (result) {
                     is Err -> "err"
                     is Ok -> "ok"
                 },
-                result.value?.let { Json.encodeToJsonElement(it) },
-                result.error?.let { Json.encodeToJsonElement(it) }
+                result.value?.let { contract.json.encodeToJsonElement(it) },
+                result.error?.let { contract.json.encodeToJsonElement(it) }
             )
-            context.status?.let { call.respond(it, serializableResult) } ?: call.respond(serializableResult)
+            call.respond(result.status, serializableResult)
         }
     }
 }

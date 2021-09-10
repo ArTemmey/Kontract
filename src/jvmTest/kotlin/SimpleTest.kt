@@ -19,7 +19,6 @@ class SimpleTest {
                 contract.userId!!.let {
 
                 }
-                status = HttpStatusCode.Unauthorized
                 Ok(UserEntity(123, "name"))
             }
         }
