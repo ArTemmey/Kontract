@@ -1,10 +1,12 @@
+val kotlinVersion = "1.5.30"
+val ktorVersion = "1.6.3"
+val serializationVersion = "1.2.2"
+
 plugins {
     kotlin("multiplatform") version "1.5.30"
     kotlin("plugin.serialization") version "1.5.30"
 }
 
-val ktor_version = "1.6.1"
-val serializationVersion = "1.2.1"
 
 group = "me.artemij"
 version = "1.0-SNAPSHOT"
@@ -23,19 +25,15 @@ kotlin {
             useJUnit()
         }
     }
-    js(LEGACY) {
-        browser {
-            commonWebpackConfig {
-                cssSupport.enabled = true
-            }
-        }
+    js(IR) {
+        useCommonJs()
+        browser()
     }
-
 
     sourceSets {
         val commonMain by getting {
             dependencies {
-                implementation("io.ktor:ktor-client-core:$ktor_version")
+                implementation("io.ktor:ktor-client-core:$ktorVersion")
                 implementation("org.jetbrains.kotlinx:kotlinx-serialization-json:$serializationVersion")
             }
         }
@@ -46,13 +44,10 @@ kotlin {
         }
         val jvmMain by getting {
             dependencies {
-                implementation("io.ktor:ktor-serialization:$ktor_version")
-                implementation("io.ktor:ktor-server-core:$ktor_version")
-                implementation("org.jetbrains.kotlin:kotlin-reflect:1.5.30")
+                implementation("io.ktor:ktor-server-core:$ktorVersion")
             }
         }
         val jvmTest by getting
         val jsMain by getting
-        val jsTest by getting
     }
 }
