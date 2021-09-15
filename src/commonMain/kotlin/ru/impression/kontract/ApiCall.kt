@@ -39,17 +39,17 @@ suspend inline fun <reified T : ApiCall.Type, reified D> ApiCall<T, D>.execute(
 ): ApiResult<D> {
     val result: SerializableResult = try {
         client.request {
-            url(contract.baseUrl + contract.parametrizedPath)
             contentType(ContentType.Application.Json)
             method = T::class.httpMethod
             requestBody?.let { body = it }
+            builder()
+            url(contract.baseUrl + contract.parametrizedPath)
             contract.headers.forEach {
                 header(it.key, it.value)
             }
             contract.queryParams.forEach {
                 parameter(it.key, it.value)
             }
-            builder()
         }
     } catch (e: ClientRequestException) {
         e.response.receive()
