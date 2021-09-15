@@ -72,6 +72,11 @@ inline fun <V, U> ApiResult<V>.map(transform: (V) -> U) = when (this) {
     is Err -> this
 }
 
+inline fun <V, U> ApiResult<V>.flatMap(transform: (V) -> ApiResult<U>) = when (this) {
+    is Ok<V> -> transform(value)
+    is Err -> this
+}
+
 @Serializable
 @PublishedApi
 internal class SerializableResult(
