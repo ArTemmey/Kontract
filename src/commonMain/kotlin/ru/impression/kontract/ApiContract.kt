@@ -1,5 +1,6 @@
 package ru.impression.kontract
 
+import kotlinx.serialization.encodeToString
 import kotlinx.serialization.json.Json
 import kotlin.properties.ReadWriteProperty
 import kotlin.reflect.KProperty
@@ -20,40 +21,40 @@ abstract class ApiContract {
         }
 
     @PublishedApi
-    internal val headers = mutableMapOf<String, Any?>()
+    internal val headers = mutableMapOf<String, String>()
 
     @PublishedApi
-    internal val pathParams = mutableMapOf<String, Any?>()
+    internal val pathParams = mutableMapOf<String, String>()
 
     @PublishedApi
-    internal val queryParams = mutableMapOf<String, Any?>()
+    internal val queryParams = mutableMapOf<String, String>()
 
     @PublishedApi
     internal var callParser: CallParser? = null
 
-    protected inline fun <reified T> header(name: String) = object : ReadWriteProperty<ApiContract, T?> {
+    protected fun header(name: String) = object : ReadWriteProperty<ApiContract, String?> {
 
-        private var value: T? = null
+        private var value: String? = null
 
         override fun getValue(thisRef: ApiContract, property: KProperty<*>) =
-            callParser?.getHeader<T>(name) ?: value
+            callParser?.getHeader(name) ?: value
 
-        override fun setValue(thisRef: ApiContract, property: KProperty<*>, value: T?) {
-            headers[name] = value
+        override fun setValue(thisRef: ApiContract, property: KProperty<*>, value: String?) {
             this.value = value
+            value?.let { headers[name] = it } ?: headers.remove(name)
         }
     }
 
-    protected inline fun <reified T> pathParam(name: String) = object : ReadWriteProperty<ApiContract, T?> {
+    protected fun pathParam(name: String) = object : ReadWriteProperty<ApiContract, String?> {
 
-        private var value: T? = null
+        private var value: String? = null
 
         override fun getValue(thisRef: ApiContract, property: KProperty<*>) =
-            callParser?.getPathParam<T>(name) ?: value
+            callParser?.getPathParam(name) ?: value
 
-        override fun setValue(thisRef: ApiContract, property: KProperty<*>, value: T?) {
-            pathParams[name] = value
+        override fun setValue(thisRef: ApiContract, property: KProperty<*>, value: String?) {
             this.value = value
+            value?.let { pathParams[name] = it } ?: pathParams.remove(name)
         }
     }
 
@@ -65,7 +66,7 @@ abstract class ApiContract {
             callParser?.getQueryParam<T>(name) ?: value
 
         override fun setValue(thisRef: ApiContract, property: KProperty<*>, value: T?) {
-            queryParams[name] = value
+            queryParams[name] = json.encodeToString(value)
             this.value = value
         }
     }

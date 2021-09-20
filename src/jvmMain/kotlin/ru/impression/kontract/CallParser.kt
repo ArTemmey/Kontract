@@ -7,20 +7,16 @@ import kotlinx.serialization.decodeFromString
 import kotlinx.serialization.json.Json
 
 @PublishedApi
-internal actual class CallParser(@PublishedApi internal val pipelineContext: PipelineContext<*, ApplicationCall>) {
+internal actual class CallParser(val pipelineContext: PipelineContext<*, ApplicationCall>, val json: Json) {
 
     @PublishedApi
-    internal actual inline fun <reified T> getPathParam(name: String): T? {
-        return Json.decodeFromString(pipelineContext.call.parameters[name] ?: return null)
-    }
+    internal actual fun getPathParam(name: String): String? = pipelineContext.call.parameters[name]
 
     @PublishedApi
     internal actual inline fun <reified T> getQueryParam(name: String): T? {
-        return Json.decodeFromString(pipelineContext.call.request.queryParameters[name] ?: return null)
+        return json.decodeFromString(pipelineContext.call.request.queryParameters[name] ?: return null)
     }
 
     @PublishedApi
-    internal actual inline fun <reified T> getHeader(name: String): T? {
-        return Json.decodeFromString(pipelineContext.call.request.header(name) ?: return null)
-    }
+    internal actual fun getHeader(name: String): String? = pipelineContext.call.request.header(name)
 }

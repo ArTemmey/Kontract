@@ -1,6 +1,7 @@
 val kotlinVersion = "1.5.30"
 val ktorVersion = "1.6.3"
 val serializationVersion = "1.2.2"
+val logbackVersion = "1.2.3"
 
 plugins {
     kotlin("multiplatform") version "1.5.30"
@@ -47,7 +48,15 @@ kotlin {
                 implementation("io.ktor:ktor-server-core:$ktorVersion")
             }
         }
-        val jvmTest by getting
+        val jvmTest by getting {
+            dependencies {
+                implementation("io.ktor:ktor-client-java:$ktorVersion")
+                implementation("io.ktor:ktor-client-json:$ktorVersion")
+                implementation("io.ktor:ktor-client-serialization:$ktorVersion")
+                implementation("io.ktor:ktor-client-logging:$ktorVersion")
+                implementation("ch.qos.logback:logback-classic:$logbackVersion")
+            }
+        }
         val jsMain by getting
     }
 }

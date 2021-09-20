@@ -40,7 +40,7 @@ internal inline fun <reified C : ApiContract, reified T : ApiCall.Type, reified 
     method(T::class.httpMethod) {
         handle {
             val contract = C::class.createInstance()
-            contract.callParser = CallParser(this)
+            contract.callParser = CallParser(this, contract.json)
             val context = ApiMethodContext(contract, this)
             val result = bodyNoArgs?.invoke(context) ?: body1Arg?.invoke(context, call.receive()) ?: return@handle
             val serializableResult = SerializableResult(

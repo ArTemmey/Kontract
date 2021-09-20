@@ -4,11 +4,11 @@ package ru.impression.kontract
 internal actual class CallParser {
 
     @PublishedApi
-    internal actual inline fun <reified T> getPathParam(name: String): T? = throw Exception()
+    internal actual fun getPathParam(name: String): String? = throw Exception()
 
     @PublishedApi
     internal actual inline fun <reified T> getQueryParam(name: String): T? = throw Exception()
 
     @PublishedApi
-    internal actual inline fun <reified T> getHeader(name: String): T? = throw Exception()
+    internal actual fun getHeader(name: String): String? = throw Exception()
 }
