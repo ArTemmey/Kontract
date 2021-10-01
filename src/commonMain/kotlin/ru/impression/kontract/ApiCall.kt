@@ -37,28 +37,30 @@ suspend inline fun <reified T : ApiCall.Type, reified D> ApiCall<T, D>.execute(
     client: HttpClient,
     builder: (HttpRequestBuilder.() -> Unit) = {}
 ): ApiResult<D> {
-    val result: SerializableResult = try {
-        client.request {
-            contentType(ContentType.Application.Json)
-            method = T::class.httpMethod
-            requestBody?.let { body = it }
-            builder()
-            url(contract.baseUrl + contract.parametrizedPath)
-            contract.headers.forEach {
-                header(it.key, it.value)
+    try {
+        val result: SerializableResult = try {
+            client.request {
+                contentType(ContentType.Application.Json)
+                method = T::class.httpMethod
+                requestBody?.let { body = it }
+                builder()
+                url(contract.baseUrl + contract.parametrizedPath)
+                contract.headers.forEach {
+                    header(it.key, it.value)
+                }
+                contract.queryParams.forEach {
+                    parameter(it.key, it.value)
+                }
             }
-            contract.queryParams.forEach {
-                parameter(it.key, it.value)
-            }
+        } catch (e: ClientRequestException) {
+            e.response.receive()
         }
-    } catch (e: ClientRequestException) {
-        e.response.receive()
-    } catch (e: ServerResponseException) {
-        return Err(ServerResponseError(e))
-    }
-    return when (result.type) {
-        "ok" -> Ok(result.value?.let { contract.json.decodeFromJsonElement<D>(it) } as D)
-        "err" -> Err(result.error!!)
-        else -> throw Exception()
+        return when (result.type) {
+            "ok" -> Ok(result.value?.let { contract.json.decodeFromJsonElement<D>(it) } as D)
+            "err" -> Err(result.error!!)
+            else -> throw Exception("Invalid result type")
+        }
+    } catch (e: Exception) {
+        return Err(ApiError.FromException(e))
     }
 }

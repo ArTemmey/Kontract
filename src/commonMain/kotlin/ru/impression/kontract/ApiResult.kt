@@ -1,47 +1,12 @@
 package ru.impression.kontract
 
-import io.ktor.client.features.*
 import io.ktor.http.*
 import kotlinx.serialization.Contextual
-import kotlinx.serialization.KSerializer
 import kotlinx.serialization.Serializable
-import kotlinx.serialization.descriptors.SerialDescriptor
-import kotlinx.serialization.descriptors.buildClassSerialDescriptor
-import kotlinx.serialization.encoding.Decoder
-import kotlinx.serialization.encoding.Encoder
-import kotlinx.serialization.encoding.decodeStructure
-import kotlinx.serialization.encoding.encodeStructure
 import kotlinx.serialization.json.JsonElement
-import kotlin.reflect.KClass
 
-interface ApiError
-
-class ServerResponseError(val cause: ServerResponseException) : ApiError
-
-inline fun <reified T : Enum<*>> polymorphicEnumSerializer(noinline factory: (String) -> T): KSerializer<T> =
-    PolymorphicEnumSerializer(T::class, factory)
-
-@PublishedApi
-internal class PolymorphicEnumSerializer<T : Enum<*>>(clazz: KClass<T>, private val factory: (String) -> T) :
-    KSerializer<T> {
-
-    override val descriptor = buildClassSerialDescriptor(clazz.simpleName!!) {
-        element("name", buildClassSerialDescriptor("name"))
-    }
-
-    override fun serialize(encoder: Encoder, value: T) {
-        encoder.encodeStructure(descriptor) {
-            encodeStringElement(descriptor, 0, value.name)
-        }
-    }
-
-    override fun deserialize(decoder: Decoder): T {
-        var name: String? = null
-        decoder.decodeStructure(descriptor) {
-            name = decodeStringElement(descriptor, 0)
-        }
-        return factory(name!!)
-    }
+interface ApiError {
+    class FromException(val cause: Exception) : ApiError
 }
 
 sealed class ApiResult<out V> {
