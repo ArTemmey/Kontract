@@ -10,13 +10,6 @@ import kotlin.reflect.KFunction1
 import kotlin.reflect.KFunction2
 import kotlin.reflect.full.createInstance
 
-inline fun <reified T : ApiContract> Route.route(crossinline build: Route.() -> Unit) {
-    val instance = T::class.createInstance()
-    route(instance.path) {
-        build(this)
-    }
-}
-
 inline fun <reified C : ApiContract, reified T : ApiCall.Type, reified D> Route.method(
     function: KFunction1<C, ApiCall<T, D>>,
     noinline body: suspend ApiMethodContext<C>.() -> ApiResult<D>
@@ -37,21 +30,23 @@ internal inline fun <reified C : ApiContract, reified T : ApiCall.Type, reified 
     noinline bodyNoArgs: (suspend ApiMethodContext<C>.() -> ApiResult<D>)? = null,
     noinline body1Arg: (suspend ApiMethodContext<C>.(R) -> ApiResult<D>)? = null
 ) {
-    method(T::class.httpMethod) {
-        handle {
-            val contract = C::class.createInstance()
-            contract.callParser = CallParser(this, contract.json)
-            val context = ApiMethodContext(contract, this)
-            val result = bodyNoArgs?.invoke(context) ?: body1Arg?.invoke(context, call.receive()) ?: return@handle
-            val serializableResult = SerializableResult(
-                when (result) {
-                    is Err -> "err"
-                    is Ok -> "ok"
-                },
-                result.value?.let { contract.json.encodeToJsonElement(it) },
-                result.error
-            )
-            call.respond(result.status, serializableResult)
+    route(C::class.createInstance().path) {
+        method(T::class.httpMethod) {
+            handle {
+                val contract = C::class.createInstance()
+                contract.callParser = CallParser(this, contract.json)
+                val context = ApiMethodContext(contract, this)
+                val result = bodyNoArgs?.invoke(context) ?: body1Arg?.invoke(context, call.receive()) ?: return@handle
+                val serializableResult = SerializableResult(
+                    when (result) {
+                        is Err -> "err"
+                        is Ok -> "ok"
+                    },
+                    result.value?.let { contract.json.encodeToJsonElement(it) },
+                    result.error
+                )
+                call.respond(result.status, serializableResult)
+            }
         }
     }
 }
