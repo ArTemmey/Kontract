@@ -38,15 +38,13 @@ internal inline fun <reified C : ApiContract, reified T : ApiCall.Type, reified 
                 val contract = C::class.createInstance()
                 contract.callParser = CallParser(this, contract.json)
                 val context = ApiMethodContext(contract, this)
-                val result = bodyNoArgs?.invoke(context)
-                    ?: body1Arg?.invoke(context, Json.decodeFromString(call.receive()))
-                    ?: return@handle
+                val result = bodyNoArgs?.invoke(context) ?: body1Arg?.invoke(context, call.receive()) ?: return@handle
                 val serializableResult = SerializableResult(
                     when (result) {
                         is Err -> "err"
                         is Ok -> "ok"
                     },
-                    result.value?.let { if (it is String) it else contract.json.encodeToString(it) },
+                    result.value?.let { contract.json.encodeToString(it) },
                     result.error
                 )
                 call.respond(result.status, serializableResult)
