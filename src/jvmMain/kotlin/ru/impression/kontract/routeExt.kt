@@ -44,7 +44,7 @@ internal inline fun <reified C : ApiContract, reified T : ApiCall.Type, reified 
                         is Err -> "err"
                         is Ok -> "ok"
                     },
-                    result.value?.let { contract.json.encodeToString(it) },
+                    result.value?.let { contract.json.encodeToJsonElement(it) },
                     result.error
                 )
                 call.respond(result.status, serializableResult)

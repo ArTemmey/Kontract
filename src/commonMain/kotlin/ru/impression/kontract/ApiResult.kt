@@ -46,7 +46,7 @@ inline fun <V, U> ApiResult<V>.flatMap(transform: (V) -> ApiResult<U>) = when (t
 @PublishedApi
 internal class SerializableResult(
     val type: String,
-    val value: String?,
+    val value: JsonElement?,
     @Contextual
     val error: ApiError?
 )

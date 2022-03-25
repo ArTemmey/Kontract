@@ -59,7 +59,7 @@ suspend inline fun <reified T : ApiCall.Type, reified D> ApiCall<T, D>.execute(
         }
         return when (result.type) {
             "ok" -> Ok(
-                result.value?.let { contract.json.decodeFromString<D>(it) } as D
+                result.value?.let { contract.json.decodeFromJsonElement<D>(it) } as D
             )
             "err" -> Err(result.error!!)
             else -> throw Exception("Invalid result type")
