@@ -5,6 +5,8 @@ import io.ktor.client.call.*
 import io.ktor.client.features.*
 import io.ktor.client.request.*
 import io.ktor.http.*
+import kotlinx.serialization.decodeFromString
+import kotlinx.serialization.encodeToString
 import kotlinx.serialization.json.Json
 import kotlinx.serialization.json.decodeFromJsonElement
 import kotlin.reflect.KClass
@@ -42,7 +44,7 @@ suspend inline fun <reified T : ApiCall.Type, reified D> ApiCall<T, D>.execute(
             client.request {
                 contentType(ContentType.Application.Json)
                 method = T::class.httpMethod
-                requestBody?.let { body = it }
+                requestBody?.let { body = if (it is String) it else contract.json.encodeToString(it) }
                 builder()
                 url(contract.baseUrl + contract.parametrizedPath)
                 contract.headers.forEach {
@@ -56,7 +58,10 @@ suspend inline fun <reified T : ApiCall.Type, reified D> ApiCall<T, D>.execute(
             e.response.receive()
         }
         return when (result.type) {
-            "ok" -> Ok(result.value?.let { contract.json.decodeFromJsonElement<D>(it) } as D)
+            "ok" -> Ok(
+                result.value
+                    ?.let { if (D::class == String::class) it else contract.json.decodeFromString<D>(it) } as D
+            )
             "err" -> Err(result.error!!)
             else -> throw Exception("Invalid result type")
         }

@@ -1,11 +1,11 @@
-val kotlinVersion = "1.5.30"
-val ktorVersion = "1.6.3"
-val serializationVersion = "1.2.2"
+val kotlinVersion = "1.6.10"
+val ktorVersion = "1.6.8"
+val serializationVersion = "1.3.2"
 val logbackVersion = "1.2.3"
 
 plugins {
-    kotlin("multiplatform") version "1.5.30"
-    kotlin("plugin.serialization") version "1.5.30"
+    kotlin("multiplatform") version "1.6.10"
+    kotlin("plugin.serialization") version "1.6.10"
 }
 
 

@@ -15,7 +15,7 @@ abstract class ApiContract {
         get() {
             var result = path
             pathParams.forEach {
-                result = result.replace("{${it.key}}", it.value.toString())
+                result = result.replace("{${it.key}}", it.value)
             }
             return result
         }
