@@ -4,6 +4,7 @@ import io.ktor.client.*
 import io.ktor.client.call.*
 import io.ktor.client.features.*
 import io.ktor.client.request.*
+import io.ktor.client.statement.*
 import io.ktor.http.*
 import kotlinx.serialization.decodeFromString
 import kotlinx.serialization.encodeToString
@@ -38,33 +39,37 @@ class ApiCall<T : ApiCall.Type, D>(
 suspend inline fun <reified T : ApiCall.Type, reified D> ApiCall<T, D>.execute(
     client: HttpClient,
     builder: (HttpRequestBuilder.() -> Unit) = {}
-): ApiResult<D> {
-    try {
-        val result: SerializableResult = try {
-            client.request {
-                contentType(ContentType.Application.Json)
-                method = T::class.httpMethod
-                requestBody?.let { body = it }
-                builder()
-                url(contract.baseUrl + contract.parametrizedPath)
-                contract.headers.forEach {
-                    header(it.key, it.value)
-                }
-                contract.queryParams.forEach {
-                    parameter(it.key, it.value)
-                }
+): ApiResult<D> = try {
+    val response: HttpResponse = try {
+        client.request {
+            contentType(ContentType.Application.Json)
+            method = T::class.httpMethod
+            requestBody?.let { body = it }
+            builder()
+            url(contract.baseUrl + contract.parametrizedPath)
+            contract.headers.forEach {
+                header(it.key, it.value)
             }
-        } catch (e: ClientRequestException) {
-            e.response.receive()
+            contract.queryParams.forEach {
+                parameter(it.key, it.value)
+            }
         }
-        return when (result.type) {
+    } catch (e: ClientRequestException) {
+        e.response
+    }
+    try {
+        val result = response.receive<SerializableResult>()
+        when (result.type) {
             "ok" -> Ok(
-                result.value?.let { contract.json.decodeFromJsonElement<D>(it) } as D
+                result.value?.let { contract.json.decodeFromJsonElement<D>(it) } as D,
+                response.status
             )
-            "err" -> Err(result.error!!)
+            "err" -> Err(result.error!!, response.status)
             else -> throw Exception("Invalid result type")
         }
     } catch (e: Exception) {
-        return Err(ApiError.FromException(e))
+        Err(ApiError.FromException(e), response.status)
     }
+} catch (e: Exception) {
+    Err(ApiError.FromException(e))
 }

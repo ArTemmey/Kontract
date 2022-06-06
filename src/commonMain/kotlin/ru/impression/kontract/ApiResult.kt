@@ -12,9 +12,7 @@ interface ApiError {
 sealed class ApiResult<out V> {
     abstract val value: V?
     abstract val error: ApiError?
-
-    @PublishedApi
-    internal abstract val status: HttpStatusCode
+    abstract val status: HttpStatusCode
 }
 
 data class Ok<out V>(override val value: V, override val status: HttpStatusCode = HttpStatusCode.OK) : ApiResult<V>() {
@@ -23,7 +21,7 @@ data class Ok<out V>(override val value: V, override val status: HttpStatusCode 
 
 data class Err(
     override val error: ApiError,
-    override val status: HttpStatusCode = HttpStatusCode.UnprocessableEntity
+    override val status: HttpStatusCode = HttpStatusCode(520, "Unknown Error")
 ) : ApiResult<Nothing>() {
     override val value = null
 }
