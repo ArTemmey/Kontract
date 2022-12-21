@@ -34,7 +34,7 @@ Server code:
 ```kotlin
 method(Api.Users::post) { postUser(it) }
 
-method(Api.Users::put) { put(it, koinGet<UserDao>()) }
+method(Api.Users::put) { putUser(it) }
 
 method(Api.Sessions::post) { postSession(it) }
 ```
